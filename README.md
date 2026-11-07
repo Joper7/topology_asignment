@@ -17,10 +17,13 @@
 - головна: https://joper7.github.io/topology_asignment/
 - компактність (основна робота): https://joper7.github.io/topology_asignment/compactness.html
 - теорема Банаха (додатково): https://joper7.github.io/topology_asignment/banach.html
+- звіт до основної роботи: https://joper7.github.io/topology_asignment/reports/report-compactness.pdf (PDF), https://joper7.github.io/topology_asignment/reports/report-compactness.docx (DOCX)
 
 ## Звіти
 
 Звіти лежать у папці `reports/`: доведення, контрприклади, опис візуалізації та використання ШІ.
+
+- `reports/report-compactness.pdf` і `reports/report-compactness.docx`: звіт до сторінки про компактність.
 
 ## Технічно
 
