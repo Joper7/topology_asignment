@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Компактність через ε-сітки</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400;1,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column; the main section pairs the whole space with a zoom "lens" where the reader makes each choice of the diagonal process. */
+:root{
+  --bg:#edf1f3; --surface:#fafbfc; --ink:#14202a; --muted:#5a6a76; --line:#c7d1d8; --grid:#dde4e9;
+  --orbit:#c2255c; --fixed:#a87300; --cool:#2a64c9; --ok:#1f7a4d; --bad:#b4332e;
+  --f-display:"Spectral",Georgia,"Times New Roman",serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1419; --surface:#141c23; --ink:#e2e9ee; --muted:#93a2ad; --line:#2d3b46; --grid:#1f2a33;
+  --orbit:#ff6f9c; --fixed:#efbf4a; --cool:#6ea7ff; --ok:#4cc38a; --bad:#ff7a70; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1419; --surface:#141c23; --ink:#e2e9ee; --muted:#93a2ad; --line:#2d3b46; --grid:#1f2a33;
+  --orbit:#ff6f9c; --fixed:#efbf4a; --cool:#6ea7ff; --ok:#4cc38a; --bad:#ff7a70; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15.5px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:56px}
+h1,h2,h3{font-family:var(--f-display);font-weight:600;line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2rem,5vw,3.2rem);letter-spacing:-.01em}
+h2{font-size:clamp(1.5rem,3.2vw,2rem)}
+h3{font-size:1.25rem}
+p{margin:0}
+.eyebrow{font-family:var(--f-mono);font-size:.74rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+.m{font-family:var(--f-display);font-style:italic;font-size:1.06em;white-space:nowrap}
+.lede{max-width:64ch;color:var(--muted);font-size:1.05rem}
+header{display:flex;flex-direction:column;gap:14px}
+.theorem{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:20px 22px;display:flex;flex-direction:column;gap:10px;max-width:80ch}
+.theorem .stmt{font-family:var(--f-display);font-size:1.16rem;line-height:1.55}
+.defs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;max-width:80ch}
+@media (max-width:700px){.defs{grid-template-columns:minmax(0,1fr)}}
+.defs div{display:flex;flex-direction:column;gap:4px;padding-top:10px;border-top:2px solid var(--ink)}
+.defs p{font-size:.94rem;color:var(--muted)}
+section{display:flex;flex-direction:column;gap:18px}
+.sec-head{display:flex;flex-direction:column;gap:8px;max-width:72ch}
+.sec-head p{color:var(--muted)}
+.pair{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:820px){.pair{grid-template-columns:minmax(0,1fr)}}
+.plot{position:relative;width:100%;max-width:100%;aspect-ratio:1/1;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:var(--surface)}
+.plot.wide{aspect-ratio:16/9}
+.plot canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#cvL,#cvX{cursor:pointer}
+.cap{font-size:.8rem;color:var(--muted);font-family:var(--f-mono)}
+.panel{display:flex;flex-direction:column;gap:16px;min-width:0}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button{font:inherit;font-size:.9rem;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:7px 14px;border-radius:4px;cursor:pointer}
+button:hover:not(:disabled){border-color:var(--muted)}
+button:disabled{opacity:.45;cursor:default}
+button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button[aria-pressed="true"],button[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button:focus-visible{outline:2px solid var(--cool);outline-offset:2px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.stat{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.stat div{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border:1px solid var(--line);border-radius:4px;background:var(--surface)}
+.stat b{font-family:var(--f-mono);font-weight:500;font-size:1.05rem;font-variant-numeric:tabular-nums}
+.stat span{font-size:.76rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font-family:var(--f-mono);font-size:.8rem;font-variant-numeric:tabular-nums}
+th,td{text-align:right;padding:4px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-weight:500;color:var(--muted);font-family:var(--f-display);font-style:italic;font-size:.95rem}
+th:first-child,td:first-child{text-align:left}
+.tbl{overflow-x:auto}
+.note{font-size:.88rem;color:var(--muted)}
+.ptext{display:flex;flex-direction:column;gap:10px;padding:16px 18px;background:var(--surface);border:1px solid var(--line);border-radius:4px}
+.eq{font-family:var(--f-display);font-style:italic;font-size:1.06rem;line-height:1.7;overflow-x:auto}
+.warn{color:var(--bad);font-size:.88rem}
+ol.proof{margin:0;padding-left:1.4em;display:flex;flex-direction:column;gap:12px;max-width:78ch}
+ol.proof li::marker{font-family:var(--f-mono);color:var(--muted)}
+ol.proof b{font-weight:600}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tabs button{font-family:var(--f-display);font-style:italic;font-size:.98rem}
+.checks{display:flex;flex-direction:column;gap:6px}
+.checks div{display:flex;justify-content:space-between;gap:10px;font-size:.92rem;padding:5px 0;border-bottom:1px solid var(--line)}
+.checks .y{color:var(--ok)} .checks .n{color:var(--bad)}
+.cor{max-width:78ch;display:flex;flex-direction:column;gap:10px}
+footer{font-size:.82rem;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Метричні простори · наочне доведення</div>
+  <h1>Компактність через ε-сітки</h1>
+  <p class="lede">Як із будь-якої послідовності витягти збіжну підпослідовність, якщо простір можна покрити скінченною кількістю як завгодно малих куль. Тут ви робите цей вибір власноруч, клітинка за клітинкою.</p>
+  <div class="theorem">
+    <div class="eyebrow">Теорема</div>
+    <p class="stmt">Якщо метричний простір <em>(X, d)</em> повний і цілком обмежений, то він секвенційно компактний: кожна послідовність у <em>X</em> має збіжну підпослідовність. Для метричних просторів це рівносильно компактності.</p>
+  </div>
+  <div class="defs">
+    <div><h3>Цілком обмежений</h3><p>Для кожного <span class="m">r &gt; 0</span> простір покривається <b>скінченною</b> кількістю куль радіуса <span class="m">r</span>. Центри таких куль утворюють скінченну r-сітку.</p></div>
+    <div><h3>Повний</h3><p>Кожна послідовність Коші має границю в <span class="m">X</span>. Тобто «дірок», до яких можна підібратися, у просторі немає.</p></div>
+  </div>
+</header>
+
+<section id="lab">
+  <div class="sec-head">
+    <h2>Діагональний відбір руками</h2>
+    <p>Простір — квадрат <span class="m">[0, 1]²</span> з метрикою <span class="m">d∞(x, y) = max(|x₁ − y₁|, |x₂ − y₂|)</span>. У цій метриці кулі — квадрати, тож r-сітка — звичайна клітчаста сітка. Точки — перші 30 000 членів послідовності. На кожному кроці оберіть у лупі одну з чотирьох клітинок, де лишається найбільше членів.</p>
+  </div>
+  <div class="seg" id="seqs" role="group" aria-label="Послідовність"></div>
+  <div class="pair">
+    <div class="panel">
+      <div class="plot"><canvas id="cvX" aria-label="Весь простір X з обраними вкладеними клітинками"></canvas></div>
+      <p class="cap">Увесь X: сітка поточного рівня, вкладені обрані кулі, діагональні члени x<sub>n₁</sub>, x<sub>n₂</sub>, …</p>
+    </div>
+    <div class="panel">
+      <div class="plot"><canvas id="cvL" aria-label="Лупа: поточна куля, поділена на чотири менші"></canvas></div>
+      <p class="cap">Лупа: поточна куля, поділена на 4 кулі вдвічі меншого радіуса. Цифри — скільки членів у кожній. Торкніться клітинки, щоб обрати.</p>
+      <div class="row"><button id="auto" class="primary">Обрати найповнішу</button><button id="back">← Крок назад</button><button id="reset">Почати спочатку</button></div>
+    </div>
+  </div>
+  <div class="pair">
+    <div class="ptext" id="ptext" aria-live="polite"></div>
+    <div class="panel">
+      <div class="stat">
+        <div><b id="sk">0</b><span>рівень k</span></div>
+        <div><b id="sr">1/2</b><span>радіус кулі rₖ</span></div>
+        <div><b id="sn">30 000</b><span>членів у кулі (з 30 000)</span></div>
+      </div>
+      <div class="tbl"><table id="tab"></table></div>
+    </div>
+  </div>
+</section>
+
+<section id="proof">
+  <div class="sec-head"><h2>Доведення повністю</h2><p>Те саме, що ви щойно робили, але для довільного повного цілком обмеженого простору і без обмеження на кількість кроків.</p></div>
+  <ol class="proof">
+    <li><b>Перший вибір.</b> Нехай <span class="m">(xₙ)</span> — довільна послідовність у <span class="m">X</span>. Покриємо <span class="m">X</span> скінченною кількістю куль радіуса 1/2. Куль скінченно, а номерів нескінченно, тож за принципом Діріхле одна з куль <span class="m">B₁</span> містить <span class="m">xₙ</span> для нескінченної множини номерів <span class="m">N₁ ⊂ ℕ</span>.</li>
+    <li><b>Звуження.</b> Покриємо <span class="m">X</span> скінченною кількістю куль радіуса 1/4. Серед членів з номерами з <span class="m">N₁</span> нескінченно багато потрапляють в одну кулю <span class="m">B₂</span>; їхні номери утворюють <span class="m">N₂ ⊂ N₁</span>. Продовжуючи з радіусами <span class="m">rₖ = 2⁻ᵏ</span>, отримуємо нескінченні множини <span class="m">N₁ ⊃ N₂ ⊃ N₃ ⊃ …</span> і кулі <span class="m">Bₖ</span> радіуса <span class="m">rₖ</span> з <span class="m">xₙ ∈ Bₖ</span> для всіх <span class="m">n ∈ Nₖ</span>.</li>
+    <li><b>Діагональ.</b> Обираємо <span class="m">n₁ ∈ N₁</span>, потім <span class="m">n₂ ∈ N₂</span> з <span class="m">n₂ &gt; n₁</span>, і загалом <span class="m">nₖ ∈ Nₖ</span> з <span class="m">nₖ &gt; nₖ₋₁</span>. Це можливо, бо кожна <span class="m">Nₖ</span> нескінченна. Отримуємо підпослідовність <span class="m">(x<sub>nₖ</sub>)</span>.</li>
+    <li><b>Коші.</b> Якщо <span class="m">i, j ≥ m</span>, то <span class="m">nᵢ, nⱼ ∈ Nₘ</span>, бо множини вкладені. Отже, обидва члени лежать у кулі <span class="m">Bₘ</span>, і <span class="m">d(x<sub>nᵢ</sub>, x<sub>nⱼ</sub>) ≤ 2rₘ = 2¹⁻ᵐ → 0</span>. Підпослідовність є послідовністю Коші.</li>
+    <li><b>Повнота.</b> <span class="m">X</span> повний, тож <span class="m">(x<sub>nₖ</sub>)</span> збігається до деякої <span class="m">x* ∈ X</span>. ∎</li>
+  </ol>
+  <p class="note" style="max-width:78ch">Цілком обмеженість використано в кроках 1–2 (скінченність покриття дає принцип Діріхле), повноту — лише в кроці 5. У метричних просторах секвенційна компактність рівносильна компактності «з кожного відкритого покриття можна виділити скінченне». Перехід від послідовностей до покриттів спирається на лему про число Лебега.</p>
+</section>
+
+<section id="break">
+  <div class="sec-head">
+    <h2>Зламай теорему</h2>
+    <p>Без однієї з двох умов висновок хибний. Причому ламається він у різних місцях доведення: без цілком обмеженості не працює крок 1, без повноти — крок 5.</p>
+  </div>
+  <div class="tabs" id="tabs" role="tablist"></div>
+  <div class="pair">
+    <div class="plot wide"><canvas id="cvB" aria-label="Ілюстрація контрприкладу"></canvas></div>
+    <div class="panel">
+      <div class="checks" id="checks"></div>
+      <p id="bnote"></p>
+      <div class="tbl"><table id="btab"></table></div>
+    </div>
+  </div>
+</section>
+
+<section class="cor">
+  <h2>Наслідок: теорема Гейне–Бореля</h2>
+  <p>Нехай <span class="m">K ⊂ ℝⁿ</span> замкнена й обмежена. Вона повна як замкнена підмножина повного простору. Вона й цілком обмежена: <span class="m">K</span> лежить у великому кубі, а куб для будь-якого <span class="m">r</span> ділиться на скінченну кількість кубиків діаметра менше <span class="m">r</span>. Отже, <span class="m">K</span> компактна.</p>
+  <p>У ℝⁿ обмеженість і цілком обмеженість збігаються, тому їх легко сплутати. Приклад з <span class="m">ℓ²</span> вище показує, що в нескінченновимірному просторі це різні речі.</p>
+</section>
+
+<footer>Позначення: <span class="m">B̄(c, r)</span> — замкнена куля. На сторінці для наочності використано метрику <span class="m">d∞</span>; вона еквівалентна евклідовій, тож повнота, цілком обмеженість і компактність від цього не змінюються. Усі обчислення виконуються в браузері.</footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s);
+const SUB="₀₁₂₃₄₅₆₇₈₉", SUP="⁰¹²³⁴⁵⁶⁷⁸⁹";
+const sub=n=>String(n).split("").map(c=>SUB[+c]).join("");
+const sup=n=>String(n).replace("-","⁻").split("").map(c=>c==="⁻"?c:SUP[+c]).join("");
+const nf=n=>n.toLocaleString("uk-UA");
+function tok(){const cs=getComputedStyle(document.documentElement);const g=n=>cs.getPropertyValue(n).trim();
+  return {bg:g("--surface"),ink:g("--ink"),muted:g("--muted"),grid:g("--grid"),line:g("--line"),orbit:g("--orbit"),fixed:g("--fixed"),cool:g("--cool"),ok:g("--ok"),bad:g("--bad"),mono:g("--f-mono"),serif:g("--f-display")};}
+function hexA(h,a){h=h.replace("#","");if(h.length===3)h=h.split("").map(c=>c+c).join("");const n=parseInt(h,16);return "rgba("+(n>>16&255)+","+(n>>8&255)+","+(n&255)+","+a+")";}
+function setup(cv){const r=cv.getBoundingClientRect();const dpr=window.devicePixelRatio||1;cv.width=Math.max(1,Math.round(r.width*dpr));cv.height=Math.max(1,Math.round(r.height*dpr));const ctx=cv.getContext("2d");ctx.setTransform(dpr,0,0,dpr,0,0);return {ctx,w:r.width,h:r.height};}
+function label(ctx,t,x,y,col,font,align,base){ctx.fillStyle=col;ctx.font=font;ctx.textAlign=align||"left";ctx.textBaseline=base||"middle";ctx.fillText(t,x,y);}
+function dot(ctx,x,y,r,fill,stroke,lw){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw||1.5;ctx.stroke();}}
+const redraws=[];
+
+/* ============ data ============ */
+const M=30000, LMAX=6;
+const frac=x=>x-Math.floor(x), clamp=x=>Math.min(1,Math.max(0,x));
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const SEQS=[
+ {id:"uni",name:"Рівномірно розкидана",gen:()=>{const X=new Float64Array(M),Y=new Float64Array(M);for(let n=0;n<M;n++){X[n]=frac(.5+(n+1)*.7548776662466927);Y[n]=frac(.5+(n+1)*.5698402909980532);}return [X,Y];},
+  about:"xₙ = ({½ + nα}, {½ + nβ}) з ірраціональними α, β. Послідовність щільна в квадраті і не збігається, але в кожній клітинці нескінченно багато членів, тож будь-який вибір правильний."},
+ {id:"rnd",name:"Випадкова",gen:()=>{const r=mulberry(20261107);const X=new Float64Array(M),Y=new Float64Array(M);for(let n=0;n<M;n++){X[n]=r();Y[n]=r();}return [X,Y];},
+  about:"Незалежні рівномірні точки (з фіксованим зерном). Теж не збігається, і теж майже напевно має члени в кожній клітинці."},
+ {id:"two",name:"Дві точки згущення",gen:()=>{const X=new Float64Array(M),Y=new Float64Array(M);for(let n=0;n<M;n++){const L=n%2?[.2731,.6912]:[.7183,.2817];const r=.34*Math.pow(1+n,-.33),t=n*2.399963;X[n]=clamp(L[0]+r*Math.cos(t));Y[n]=clamp(L[1]+r*Math.sin(t));}return [X,Y];},
+  about:"Парні члени накручуються на одну точку, непарні на іншу. Уся послідовність не збігається, а залежно від вашого вибору підпослідовність піде до однієї з двох точок."}
+];
+let seq=0, PX=null, PY=null;
+let path=[];           // chosen cells: [i,j] at levels 1..k
+let cand=[];           // cand[k] = Int32Array of indices in chosen cell of level k
+let diag=[];           // diag[k-1] = n_k
+const cellOf=(v,k)=>{const s=1<<k;return Math.min(s-1,Math.floor(v*s));};
+function loadSeq(i){seq=i;[PX,PY]=SEQS[i].gen();const all=new Int32Array(M);for(let n=0;n<M;n++)all[n]=n;cand=[all];path=[];diag=[];
+  document.querySelectorAll("#seqs button").forEach((b,j)=>b.setAttribute("aria-pressed",j===i?"true":"false"));update();}
+function counts(){const k=path.length;const c=[0,0,0,0];const base=k?path[k-1]:[0,0];const C=cand[k];
+  for(let t=0;t<C.length;t++){const n=C[t];const i=cellOf(PX[n],k+1)-2*base[0],j=cellOf(PY[n],k+1)-2*base[1];c[j*2+i]++;}return c;}
+function choose(q){ // q in 0..3 : i=q%2, j=q>>1
+  const k=path.length; if(k>=LMAX) return; const base=k?path[k-1]:[0,0];
+  const ci=2*base[0]+(q%2), cj=2*base[1]+(q>>1);
+  const C=cand[k]; const out=[]; for(let t=0;t<C.length;t++){const n=C[t];if(cellOf(PX[n],k+1)===ci&&cellOf(PY[n],k+1)===cj)out.push(n);}
+  if(!out.length) return;
+  const prev=diag.length?diag[diag.length-1]:-1; let nk=-1; for(const n of out){if(n>prev){nk=n;break;}}
+  if(nk<0) return;
+  path.push([ci,cj]); cand.push(Int32Array.from(out)); diag.push(nk); update();
+}
+function back(){if(!path.length)return;path.pop();cand.pop();diag.pop();update();}
+const cellBox=(k,c)=>{const s=1/(1<<k);return [c[0]*s,c[1]*s,s];};
+
+/* ============ drawing: whole space ============ */
+const cvX=$("#cvX"), cvL=$("#cvL"); let geoX=null, geoL=null;
+function drawX(){
+  const {ctx,w,h}=setup(cvX); const T=tok(); ctx.fillStyle=T.bg;ctx.fillRect(0,0,w,h);
+  const pad=22, S=Math.min(w,h)-2*pad; const ox=(w-S)/2, oy=(h-S)/2;
+  const X=x=>ox+x*S, Y=y=>oy+(1-y)*S; geoX={ox,oy,S};
+  const k=path.length;
+  // grid of level k over whole X (the finite r-net)
+  if(k>=1&&k<=5){ctx.strokeStyle=T.grid;ctx.lineWidth=1;const s=1<<k;ctx.beginPath();for(let t=1;t<s;t++){const px=Math.round(X(t/s))+.5,py=Math.round(Y(t/s))+.5;ctx.moveTo(px,oy);ctx.lineTo(px,oy+S);ctx.moveTo(ox,py);ctx.lineTo(ox+S,py);}ctx.stroke();}
+  // points
+  const ps=Math.max(1,S/420);
+  ctx.fillStyle=hexA(T.muted,k?.22:.45);
+  const inC=k?new Uint8Array(M):null; if(k){const C=cand[k];for(let t=0;t<C.length;t++)inC[C[t]]=1;}
+  for(let n=0;n<M;n++){if(inC&&inC[n])continue;ctx.fillRect(X(PX[n])-ps/2,Y(PY[n])-ps/2,ps,ps);}
+  if(k){ctx.fillStyle=hexA(T.orbit,.85);const C=cand[k];const p2=ps*1.4;for(let t=0;t<C.length;t++){const n=C[t];ctx.fillRect(X(PX[n])-p2/2,Y(PY[n])-p2/2,p2,p2);}}
+  // nested chosen cells
+  path.forEach((c,idx)=>{const [x0,y0,s]=cellBox(idx+1,c);ctx.strokeStyle=hexA(T.cool,Math.max(.45,1-idx*.08));ctx.lineWidth=Math.max(1.2,2.6-idx*.25);ctx.strokeRect(X(x0),Y(y0+s),s*S,s*S);});
+  ctx.strokeStyle=T.line;ctx.lineWidth=1;ctx.strokeRect(ox+.5,oy+.5,S-1,S-1);
+  // diagonal points
+  if(diag.length){ctx.strokeStyle=hexA(T.fixed,.8);ctx.lineWidth=1.2;ctx.setLineDash([4,3]);ctx.beginPath();diag.forEach((n,i)=>{const x=X(PX[n]),y=Y(PY[n]);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();ctx.setLineDash([]);
+    diag.forEach((n,i)=>{const x=X(PX[n]),y=Y(PY[n]);dot(ctx,x,y,5,T.fixed,T.bg,1.5);if(i<3)label(ctx,"x"+"ₙ"+sub(i+1),x+8,y-9,T.fixed,"italic 600 13px "+T.serif);});}
+  label(ctx,"0",ox-6,oy+S+10,T.muted,"10px "+T.mono,"right");label(ctx,"1",ox+S,oy+S+10,T.muted,"10px "+T.mono,"center");label(ctx,"1",ox-6,oy,T.muted,"10px "+T.mono,"right");
+}
+/* ============ drawing: lens ============ */
+function drawL(){
+  const {ctx,w,h}=setup(cvL); const T=tok(); ctx.fillStyle=T.bg;ctx.fillRect(0,0,w,h);
+  const pad=14, S=Math.min(w,h)-2*pad; const ox=(w-S)/2, oy=(h-S)/2;
+  const k=path.length; const [x0,y0,s]=k?cellBox(k,path[k-1]):[0,0,1];
+  const X=x=>ox+(x-x0)/s*S, Y=y=>oy+(1-(y-y0)/s)*S; geoL={ox,oy,S};
+  const C=cand[k]; const cnt=k<LMAX?counts():null;
+  // subcell shading by count
+  if(cnt){const mx=Math.max(...cnt);for(let q=0;q<4;q++){const i=q%2,j=q>>1;const a=mx?cnt[q]/mx:0;ctx.fillStyle=hexA(T.cool,.04+.12*a);ctx.fillRect(ox+i*S/2,oy+(1-j)*S/2,S/2,S/2);}}
+  const ps=Math.max(1.4,Math.min(4,S/(Math.sqrt(C.length)*3)));
+  ctx.fillStyle=hexA(T.orbit,.8);for(let t=0;t<C.length;t++){const n=C[t];ctx.fillRect(X(PX[n])-ps/2,Y(PY[n])-ps/2,ps,ps);}
+  // subdivision
+  if(cnt){ctx.strokeStyle=T.cool;ctx.lineWidth=1.5;ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(ox+S/2,oy);ctx.lineTo(ox+S/2,oy+S);ctx.moveTo(ox,oy+S/2);ctx.lineTo(ox+S,oy+S/2);ctx.stroke();ctx.setLineDash([]);
+    const mx=Math.max(...cnt);
+    for(let q=0;q<4;q++){const i=q%2,j=q>>1;const cx=ox+(i+.5)*S/2,cy=oy+(1-j)*S/2+S/4;
+      const tx=nf(cnt[q]);ctx.font="600 "+Math.round(S/11)+"px "+T.mono;const tw=ctx.measureText(tx).width;
+      ctx.fillStyle=hexA(T.bg.length>4?T.bg:"#ffffff",.82);ctx.fillRect(cx-tw/2-8,cy-S/20-4,tw+16,S/10+8);
+      label(ctx,tx,cx,cy,cnt[q]===mx?T.ink:T.muted,"600 "+Math.round(S/11)+"px "+T.mono,"center");}}
+  ctx.strokeStyle=T.cool;ctx.lineWidth=2.5;ctx.strokeRect(ox,oy,S,S);
+  diag.forEach((n,i)=>{const x=X(PX[n]),y=Y(PY[n]);if(x<ox-2||x>ox+S+2||y<oy-2||y>oy+S+2)return;dot(ctx,x,y,5.5,T.fixed,T.bg,1.5);label(ctx,"x"+"ₙ"+sub(i+1),x+8,y-10,T.fixed,"italic 600 13px "+T.serif);});
+  if(k===LMAX){label(ctx,"x* — у цій кулі",ox+S/2,oy+S-14,T.fixed,"italic 600 14px "+T.serif,"center");}
+}
+function pickAt(cv,e,geo,rel){
+  if(!geo||path.length>=LMAX) return; const r=cv.getBoundingClientRect(); const px=e.clientX-r.left,py=e.clientY-r.top;
+  let u,v;
+  if(rel){u=(px-geo.ox)/geo.S;v=1-(py-geo.oy)/geo.S;}
+  else{const k=path.length;const [x0,y0,s]=k?cellBox(k,path[k-1]):[0,0,1];u=((px-geo.ox)/geo.S-x0)/s;v=((1-(py-geo.oy)/geo.S)-y0)/s;}
+  if(u<0||u>1||v<0||v>1) return; const q=(v>=.5?2:0)+(u>=.5?1:0); choose(q);
+}
+cvL.addEventListener("click",e=>pickAt(cvL,e,geoL,true));
+cvX.addEventListener("click",e=>pickAt(cvX,e,geoX,false));
+
+/* ============ text & tables ============ */
+function rStr(k){return "1/"+(1<<(k+1));}
+function update(){
+  const k=path.length, C=cand[k];
+  $("#sk").textContent=k; $("#sr").textContent=rStr(k); $("#sn").textContent=nf(C.length);
+  $("#auto").disabled=k>=LMAX; $("#back").disabled=k===0;
+  const nets=Math.pow(4,k+1);
+  let h;
+  if(k===0){
+    h=`<div class="eyebrow">Старт</div><h3>Скінченне покриття і принцип Діріхле</h3>
+    <p>${SEQS[seq].about}</p>
+    <p>Увесь квадрат — це куля <span class="m">B̄((½, ½), ½)</span> у метриці <span class="m">d∞</span>. Ділимо його на 4 кулі радіуса <span class="m">1/4</span>. Це скінченна 1/4-сітка, яка існує завдяки цілком обмеженості.</p>
+    <p>Куль 4, а членів нескінченно багато. Отже, в одній з куль їх нескінченно багато. Оберіть її в лупі.</p>`;
+  } else if(k<LMAX){
+    const few=C.length<40;
+    h=`<div class="eyebrow">Крок ${k} з ${LMAX}</div><h3>Куля радіуса ${rStr(k)}</h3>
+    <p>Обрано кулю <span class="m">B${sub(k)}</span>. Номери членів у ній утворюють множину <span class="m">N${sub(k)} ⊂ N${sub(k-1)}</span>. З перших ${nf(M)} членів їх тут ${nf(C.length)}; у теорії ця множина нескінченна.</p>
+    <p>Діагональний член: <span class="m">n${sub(k)} = ${diag[k-1]}</span> — ${k>1?`найменший номер з <span class="m">N${sub(k)}</span>, більший за <span class="m">n${sub(k-1)}</span>`:`найменший номер з <span class="m">N₁</span>`}. ${k>1?`Він лежить у <b>усіх</b> кулях <span class="m">B₁ ⊃ … ⊃ B${sub(k)}</span>.`:""}</p>
+    <p>Повністю простір покривають ${nets} кулі радіуса ${rStr(k+1)} — знову скінченно багато. Ділимо поточну кулю на 4 і обираємо далі.</p>
+    ${few?`<p class="warn">Тут лишилося мало членів з перших ${nf(M)}. У доведенні можна обирати лише кулю з нескінченною кількістю членів; з неповними даними ми цього не бачимо.</p>`:""}`;
+  } else {
+    h=`<div class="eyebrow">Фініш</div><h3>Діагональ дає послідовність Коші, повнота — границю</h3>
+    <p>Підпослідовність <span class="m">x<sub>n₁</sub>, x<sub>n₂</sub>, …, x<sub>n${sub(k)}</sub></span>: її члени, починаючи з <span class="m">m</span>-го, лежать у кулі <span class="m">Bₘ</span>, тож</p>
+    <div class="eq">d∞(x<sub>nᵢ</sub>, x<sub>nⱼ</sub>) ≤ 2·rₘ = 2⁻ᵐ при i, j ≥ m.</div>
+    <p>Таблиця праворуч перевіряє це на ваших точках. Отже, це послідовність Коші. <span class="m">[0, 1]²</span> повний, тому вона збігається до точки <span class="m">x*</span>, що лежить в усіх кулях <span class="m">Bₖ</span>.</p>
+    <p class="note">Тут зупиняємося на ${LMAX} кроках, бо з ${nf(M)} точок глибше вже майже нічого не лишається. У доведенні процес нескінченний.</p>`;
+  }
+  $("#ptext").innerHTML=h;
+  let t="";
+  if(diag.length){
+    t="<tr><th>m</th><th>nₘ</th><th>max d∞(x<sub>nᵢ</sub>, x<sub>nⱼ</sub>), i, j ≥ m</th><th>межа 2⁻ᵐ</th></tr>";
+    for(let m=1;m<=diag.length;m++){let mx=0;for(let i=m-1;i<diag.length;i++)for(let j=i+1;j<diag.length;j++){const a=diag[i],b=diag[j];mx=Math.max(mx,Math.abs(PX[a]-PX[b]),Math.abs(PY[a]-PY[b]));}
+      t+=`<tr><td>${m}</td><td>${diag[m-1]}</td><td>${m===diag.length?"—":mx.toFixed(4)}</td><td>${(1/(1<<m)).toFixed(4)}</td></tr>`;}
+  }
+  $("#tab").innerHTML=t||"<tr><td class=\"note\" style=\"text-align:left;white-space:normal\">Тут з'являться обрані номери nₖ і перевірка умови Коші.</td></tr>";
+  drawX(); drawL();
+}
+$("#auto").addEventListener("click",()=>{const c=counts();let q=0;for(let i=1;i<4;i++)if(c[i]>c[q])q=i;choose(q);});
+$("#back").addEventListener("click",back);
+$("#reset").addEventListener("click",()=>loadSeq(seq));
+SEQS.forEach((s,i)=>{const b=document.createElement("button");b.textContent=s.name;b.addEventListener("click",()=>loadSeq(i));$("#seqs").appendChild(b);});
+redraws.push(drawX,drawL);
+
+/* ============ break it ============ */
+const CASES=[
+ {name:"ℝ, xₙ = n",ck:[1,0,0],
+  note:`<span class="m">ℝ</span> повний, але не цілком обмежений (і навіть не обмежений). Будь-яка куля радіуса 1/2 містить щонайбільше один член, бо <span class="m">|xₘ − xₙ| ≥ 1</span>. Крок 1 доведення ламається: скінченного покриття немає, і принцип Діріхле не застосувати. Жодна підпослідовність не є послідовністю Коші.`,
+  rows:()=>{let r="<tr><th>n</th><th>xₙ</th><th>найближчий інший член</th></tr>";for(let n=1;n<=6;n++)r+=`<tr><td>${n}</td><td>${n}</td><td>на відстані 1</td></tr>`;return r;},
+  draw:(ctx,w,h,T)=>{const L=40,R=w-30,y=h*.58;const X=x=>L+(x+.5)/13*(R-L);
+    ctx.strokeStyle=T.ink;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(L-10,y);ctx.lineTo(R+10,y);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(R+10,y);ctx.lineTo(R+2,y-5);ctx.lineTo(R+2,y+5);ctx.closePath();ctx.fillStyle=T.ink;ctx.fill();
+    for(let n=0;n<=12;n++){const x=X(n);ctx.fillStyle=hexA(n%2?T.cool:T.orbit,.12);ctx.fillRect(X(n-.5)+1,y-28,X(n+.5)-X(n-.5)-2,56);
+      dot(ctx,x,y,4.5,T.orbit);label(ctx,String(n),x,y+40,T.muted,"11px "+T.mono,"center");}
+    label(ctx,"кожна куля радіуса ½ містить один член",L,y-48,T.ink,"italic 15px "+T.serif);label(ctx,"→ ∞",R-4,y-18,T.muted,"italic 14px "+T.serif,"right");}},
+ {name:"ℓ², одинична куля, eₙ",ck:[1,0,0],
+  note:`<span class="m">B̄(0, 1) ⊂ ℓ²</span> повна (замкнена в повному просторі) і обмежена. Але для базисних векторів <span class="m">‖eᵢ − eⱼ‖ = √2</span> при <span class="m">i ≠ j</span>. Куля радіуса 1/2 має діаметр не більше 1 &lt; √2, тож містить щонайбільше один <span class="m">eₙ</span>. Нескінченно багато <span class="m">eₙ</span> ⇒ скінченної 1/2-сітки немає. Отже, <b>обмежений ≠ цілком обмежений</b>, і в нескінченновимірному просторі «замкнений + обмежений» не дає компактності.`,
+  rows:()=>{let r="<tr><th>i, j</th><th>‖eᵢ − eⱼ‖</th></tr>";[[1,2],[1,7],[3,40],[10,1000]].forEach(p=>r+=`<tr><td>${p[0]}, ${p[1]}</td><td>√2 ≈ 1.4142</td></tr>`);return r;},
+  draw:(ctx,w,h,T)=>{const cx=w/2,cy=h/2+6,R=Math.min(w,h)*.36,K=11;const P=[];for(let i=0;i<K;i++){const a=-Math.PI/2+i*2*Math.PI/K;P.push([cx+R*Math.cos(a),cy+R*Math.sin(a)]);}
+    ctx.strokeStyle=hexA(T.cool,.35);ctx.lineWidth=1;for(let i=0;i<K;i++)for(let j=i+1;j<K;j++){ctx.beginPath();ctx.moveTo(P[i][0],P[i][1]);ctx.lineTo(P[j][0],P[j][1]);ctx.stroke();}
+    P.forEach((p,i)=>{dot(ctx,p[0],p[1],5,T.orbit);const a=-Math.PI/2+i*2*Math.PI/K;label(ctx,"e"+sub(i+1),cx+(R+20)*Math.cos(a),cy+(R+18)*Math.sin(a),T.orbit,"italic 14px "+T.serif,"center");});
+    label(ctx,"усі відстані = √2",cx,cy,T.ink,"italic 600 15px "+T.serif,"center");
+    label(ctx,"схема не в масштабі: у площині рівновіддалених точок не більше трьох",10,h-12,T.muted,"11px "+T.mono);}},
+ {name:"(0, 1], xₙ = 1/n",ck:[0,1,0],
+  note:`<span class="m">(0, 1]</span> цілком обмежений як підмножина <span class="m">[0, 1]</span>. Діагональний відбір працює (тут уся послідовність уже є послідовністю Коші), але її границя 0 не належить простору. Ламається лише останній крок доведення: повнота.`,
+  rows:()=>{let r="<tr><th>n</th><th>xₙ</th></tr>";[1,2,3,10,100,1000].forEach(n=>r+=`<tr><td>${n}</td><td>${(1/n).toFixed(4)}</td></tr>`);return r;},
+  draw:(ctx,w,h,T)=>{const L=40,R=w-30,y=h*.68;const X=x=>L+x*(R-L);
+    ctx.strokeStyle=T.cool;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(X(0),y);ctx.lineTo(X(1),y);ctx.stroke();
+    for(let n=1;n<=80;n++)dot(ctx,X(1/n),y,n<6?4:2.2,T.orbit);
+    for(let k=0;k<6;k++){const s=Math.pow(.5,k),yy=y-26-k*16;ctx.strokeStyle=hexA(T.ink,.85-k*.1);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(X(0),yy);ctx.lineTo(X(s),yy);ctx.moveTo(X(s),yy-4);ctx.lineTo(X(s),yy+4);ctx.stroke();
+      if(k<4)label(ctx,"B"+sub(k+1),X(s)+6,yy,T.muted,"italic 13px "+T.serif);}
+    dot(ctx,X(0),y,6,T.bg,T.bad,2);label(ctx,"0 ∉ X",X(0)+4,y+24,T.bad,"italic 600 14px "+T.serif);
+    label(ctx,"1",X(1),y+22,T.muted,"11px "+T.mono,"center");label(ctx,"вкладені кулі стягуються до дірки",L,26,T.ink,"italic 15px "+T.serif);}},
+ {name:"ℚ ∩ [0, 1], наближення 1/√2",ck:[0,1,0],
+  note:`<span class="m">ℚ ∩ [0, 1]</span> цілком обмежений. Візьмемо десяткові наближення <span class="m">xₙ = ⌊10ⁿ/√2⌋ / 10ⁿ</span>: 0.7, 0.70, 0.707, 0.7071, … Усі вони раціональні, а послідовність Коші, але її границя <span class="m">1/√2</span> ірраціональна. «Дірка» тут не на краю, а всередині простору.`,
+  rows:()=>{let r="<tr><th>n</th><th>xₙ</th><th>|xₙ − 1/√2|</th></tr>";const t=Math.SQRT1_2;for(let n=1;n<=7;n++){const v=Math.floor(Math.pow(10,n)*t)/Math.pow(10,n);r+=`<tr><td>${n}</td><td>${v.toFixed(n)}</td><td>${(t-v).toExponential(1)}</td></tr>`;}return r;},
+  draw:(ctx,w,h,T)=>{const lo=.695,hi=.712,L=40,R=w-30,y=h*.68;const X=x=>L+(x-lo)/(hi-lo)*(R-L);const t=Math.SQRT1_2;
+    ctx.strokeStyle=T.cool;ctx.lineWidth=4;ctx.setLineDash([2,3]);ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(R,y);ctx.stroke();ctx.setLineDash([]);
+    for(let n=1;n<=8;n++){const v=Math.floor(Math.pow(10,n)*t)/Math.pow(10,n);dot(ctx,X(v),y,4-Math.min(2,n*.3),T.orbit);}
+    for(let k=0;k<5;k++){const half=(hi-lo)/2*Math.pow(.45,k),yy=y-26-k*16;ctx.strokeStyle=hexA(T.ink,.85-k*.12);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(X(Math.max(lo,t-half)),yy);ctx.lineTo(X(Math.min(hi,t+half)),yy);ctx.stroke();}
+    dot(ctx,X(t),y,6,T.bg,T.bad,2);label(ctx,"1/√2 ∉ ℚ",X(t),y+24,T.bad,"italic 600 14px "+T.serif,"center");
+    label(ctx,"0.7",X(.7),y+44,T.muted,"11px "+T.mono,"center");label(ctx,"0.71",X(.71),y+44,T.muted,"11px "+T.mono,"center");
+    label(ctx,"масштаб: відрізок [0.695, 0.712]",L,26,T.ink,"italic 15px "+T.serif);}}
+];
+let bc=0; const cvB=$("#cvB");
+function drawB(){const {ctx,w,h}=setup(cvB);const T=tok();ctx.fillStyle=T.bg;ctx.fillRect(0,0,w,h);CASES[bc].draw(ctx,w,h,T);}
+function setCase(i){bc=i;const c=CASES[i];
+  document.querySelectorAll("#tabs button").forEach((b,j)=>b.setAttribute("aria-selected",j===i?"true":"false"));
+  const names=["X повний","X цілком обмежений","Кожна послідовність має збіжну підпослідовність"];
+  $("#checks").innerHTML=names.map((n,j)=>`<div><span>${n}</span><b class="${c.ck[j]?"y":"n"}">${c.ck[j]?"✓ так":"✗ ні"}</b></div>`).join("");
+  $("#bnote").innerHTML=c.note;$("#btab").innerHTML=c.rows();drawB();}
+CASES.forEach((c,i)=>{const b=document.createElement("button");b.textContent=c.name;b.setAttribute("role","tab");b.addEventListener("click",()=>setCase(i));$("#tabs").appendChild(b);});
+redraws.push(drawB);
+
+const redrawAll=()=>redraws.forEach(f=>f());
+const ro=new ResizeObserver(()=>redrawAll());[cvX,cvL,cvB].forEach(c=>ro.observe(c.parentElement));
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",redrawAll);
+new MutationObserver(redrawAll).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(redrawAll);
+loadSeq(0); setCase(0);
+})();
+</script>
+
+</html>

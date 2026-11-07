@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Нерухома точка Банаха</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400;1,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column; each section pairs a live plot (the plane) with its text/controls, stacking on phones. */
+:root{
+  --bg:#edf1f3; --surface:#fafbfc; --ink:#14202a; --muted:#5a6a76; --line:#c7d1d8; --grid:#dde4e9;
+  --orbit:#c2255c; --fixed:#a87300; --cool:#2a64c9; --ok:#1f7a4d; --bad:#b4332e;
+  --f-display:"Spectral",Georgia,"Times New Roman",serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1419; --surface:#141c23; --ink:#e2e9ee; --muted:#93a2ad; --line:#2d3b46; --grid:#1f2a33;
+  --orbit:#ff6f9c; --fixed:#efbf4a; --cool:#6ea7ff; --ok:#4cc38a; --bad:#ff7a70; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1419; --surface:#141c23; --ink:#e2e9ee; --muted:#93a2ad; --line:#2d3b46; --grid:#1f2a33;
+  --orbit:#ff6f9c; --fixed:#efbf4a; --cool:#6ea7ff; --ok:#4cc38a; --bad:#ff7a70; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15.5px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:56px}
+h1,h2,h3{font-family:var(--f-display);font-weight:600;line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2rem,5vw,3.2rem);letter-spacing:-.01em}
+h2{font-size:clamp(1.5rem,3.2vw,2rem)}
+h3{font-size:1.2rem}
+p{margin:0}
+.eyebrow{font-family:var(--f-mono);font-size:.74rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+.m{font-family:var(--f-display);font-style:italic;font-size:1.06em;white-space:nowrap}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.lede{max-width:64ch;color:var(--muted);font-size:1.05rem}
+header{display:flex;flex-direction:column;gap:14px}
+.theorem{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:20px 22px;display:flex;flex-direction:column;gap:10px;max-width:78ch}
+.theorem .stmt{font-family:var(--f-display);font-size:1.18rem;line-height:1.55}
+.theorem .stmt em{font-style:italic}
+section{display:flex;flex-direction:column;gap:18px}
+.sec-head{display:flex;flex-direction:column;gap:8px;max-width:70ch}
+.sec-head p{color:var(--muted)}
+.pair{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:820px){.pair{grid-template-columns:minmax(0,1fr)}}
+.plot{position:relative;width:100%;max-width:100%;aspect-ratio:4/3;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:var(--surface)}
+.plot.sq{aspect-ratio:1/1}
+.plot canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#cvS{touch-action:none;cursor:crosshair}
+.hint{position:absolute;left:10px;bottom:8px;font-size:.78rem;color:var(--muted);font-family:var(--f-mono);pointer-events:none;background:color-mix(in srgb,var(--surface) 80%,transparent);padding:2px 6px;border-radius:3px}
+.panel{display:flex;flex-direction:column;gap:16px;min-width:0}
+.ctl{display:flex;flex-direction:column;gap:6px}
+.ctl label{display:flex;justify-content:space-between;gap:8px;font-size:.9rem}
+.ctl label span:last-child{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--orbit)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button{font:inherit;font-size:.9rem;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:7px 14px;border-radius:4px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--cool);outline-offset:2px}
+.check{display:flex;gap:8px;align-items:center;font-size:.9rem}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:.84rem;padding:4px 10px;border-radius:999px;border:1px solid currentColor;width:fit-content}
+.pill.ok{color:var(--ok)} .pill.bad{color:var(--bad)} .pill.warn{color:var(--fixed)}
+table{border-collapse:collapse;width:100%;font-family:var(--f-mono);font-size:.8rem;font-variant-numeric:tabular-nums}
+th,td{text-align:right;padding:4px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-weight:500;color:var(--muted);font-family:var(--f-display);font-style:italic;font-size:.95rem}
+th:first-child,td:first-child{text-align:left}
+.tbl{overflow-x:auto}
+.note{font-size:.88rem;color:var(--muted)}
+.big{font-family:var(--f-mono);font-size:.9rem}
+
+/* proof stepper */
+.steps{display:flex;flex-wrap:wrap;gap:6px}
+.steps button{padding:5px 11px;font-family:var(--f-mono);font-size:.8rem}
+.steps button[aria-current="step"]{background:var(--orbit);color:var(--surface);border-color:var(--orbit)}
+.ptext{display:flex;flex-direction:column;gap:12px}
+.ptext h3{font-size:1.35rem}
+.ptext .eq{font-family:var(--f-display);font-style:italic;font-size:1.08rem;background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:10px 14px;overflow-x:auto;line-height:1.7}
+.chartbox{display:flex;flex-direction:column;gap:6px}
+.chart{position:relative;width:100%;height:170px;border:1px solid var(--line);border-radius:4px;background:var(--surface);overflow:hidden}
+.chart canvas{position:absolute;inset:0;width:100%;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:.8rem;color:var(--muted)}
+.legend i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px;border-radius:2px}
+.nav{display:flex;gap:8px;justify-content:space-between}
+
+/* break it */
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tabs button{font-family:var(--f-display);font-style:italic;font-size:.98rem}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.checks{display:flex;flex-direction:column;gap:6px}
+.checks div{display:flex;justify-content:space-between;gap:10px;font-size:.92rem;padding:5px 0;border-bottom:1px solid var(--line)}
+.checks b{font-weight:600}
+.checks .y{color:var(--ok)} .checks .n{color:var(--bad)}
+.apps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+@media (max-width:820px){.apps{grid-template-columns:minmax(0,1fr)}}
+.apps div{display:flex;flex-direction:column;gap:6px;padding-top:12px;border-top:2px solid var(--ink)}
+.apps p{font-size:.92rem;color:var(--muted)}
+footer{font-size:.82rem;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Метричні простори · наочне доведення</div>
+  <h1>Нерухома точка Банаха</h1>
+  <p class="lede">Покладіть карту міста на землю в цьому ж місті. Рівно одна точка карти лежить точно над тим місцем, яке вона зображує. Ця сторінка показує, чому так, і де саме в доведенні працює кожна умова.</p>
+  <div class="theorem">
+    <div class="eyebrow">Теорема (С. Банах, 1922)</div>
+    <p class="stmt">Нехай <em>(X, d)</em> — повний метричний простір, <em>f : X → X</em>, і існує <em>q ∈ [0, 1)</em> таке, що <em>d(f(x), f(y)) ≤ q · d(x, y)</em> для всіх <em>x, y ∈ X</em>. Тоді <em>f</em> має рівно одну нерухому точку <em>x*</em>, і для будь-якого <em>x₀ ∈ X</em> послідовність <em>xₙ₊₁ = f(xₙ)</em> збігається до <em>x*</em>.</p>
+  </div>
+</header>
+
+<section id="sandbox">
+  <div class="sec-head">
+    <h2>Пісочниця: стиск площини</h2>
+    <p>Тут <span class="m">f(x) = q·R<sub>θ</sub>x + b</span> — поворот на кут θ, стиск у q разів і зсув. Сірий прямокутник K — «карта», вкладені прямокутники — її образи f(K), f²(K), … Торкніться площини, щоб додати стартову точку; перетягуйте точки й золоту мітку x*.</p>
+  </div>
+  <div class="pair">
+    <div class="plot"><canvas id="cvS" aria-label="Площина з ітераціями стискаючого відображення"></canvas><div class="hint">торкніться · перетягніть</div></div>
+    <div class="panel">
+      <div class="ctl"><label for="q"><span>Коефіцієнт стиску <span class="m">q</span></span><span id="qv">0.78</span></label><input id="q" type="range" min="0.05" max="1.12" step="0.01" value="0.78"></div>
+      <div class="ctl"><label for="th"><span>Кут повороту <span class="m">θ</span></span><span id="thv">35°</span></label><input id="th" type="range" min="-180" max="180" step="1" value="35"></div>
+      <div id="status" class="pill ok">Стиск: q &lt; 1</div>
+      <label class="check"><input id="img" type="checkbox" checked> Показувати образи fⁿ(K)</label>
+      <div class="row"><button id="run" class="primary">Запустити ітерації</button><button id="clear">Прибрати точки</button></div>
+      <div class="tbl"><table id="tab"></table></div>
+      <p id="eps" class="note"></p>
+    </div>
+  </div>
+</section>
+
+<section id="proof">
+  <div class="sec-head">
+    <h2>Доведення по кроках</h2>
+    <p>Тут взято загальне афінне відображення площини: не поворот зі стиском, а «перекошене», тож нерівності в доведенні строгі, і різницю між фактом і оцінкою видно на графіку.</p>
+  </div>
+  <div class="steps" id="steps" role="list"></div>
+  <div class="pair">
+    <div class="panel">
+      <div class="plot"><canvas id="cvP" aria-label="Ілюстрація поточного кроку доведення"></canvas></div>
+      <div class="chartbox" id="chartbox"><div class="chart"><canvas id="cvC" aria-label="Графік відстаней у логарифмічному масштабі"></canvas></div><div class="legend" id="legend"></div></div>
+    </div>
+    <div class="ptext" id="ptext" aria-live="polite"></div>
+  </div>
+  <div class="nav"><button id="prev">← Назад</button><button id="next" class="primary">Далі →</button></div>
+</section>
+
+<section id="break">
+  <div class="sec-head">
+    <h2>Зламай теорему</h2>
+    <p>Кожна умова потрібна. У кожному прикладі нижче прибрано рівно одну з них, і нерухома точка зникає або ітерації перестають до неї йти. Графіки — павутинні діаграми: вертикаль до графіка f, горизонталь до діагоналі y = x.</p>
+  </div>
+  <div class="tabs" id="tabs" role="tablist"></div>
+  <div class="pair">
+    <div class="plot sq"><canvas id="cvB" aria-label="Павутинна діаграма для контрприкладу"></canvas></div>
+    <div class="panel">
+      <div class="checks" id="checks"></div>
+      <p id="bnote"></p>
+      <div class="tbl"><table id="btab"></table></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><h2>Де ця теорема працює далі</h2></div>
+  <div class="apps">
+    <div><h3>Теорема Пікара</h3><p>Розв'язок задачі Коші <span class="m">y′ = F(t, y)</span> — нерухома точка оператора <span class="m">(Ty)(t) = y₀ + ∫F(s, y(s))ds</span> у повному просторі неперервних функцій. Ітерації Пікара — це рівно xₙ₊₁ = f(xₙ).</p></div>
+    <div><h3>Фрактали IFS</h3><p>Кілька стисків площини разом задають стиск на просторі компактних множин з метрикою Хаусдорфа. Цей простір повний, тож у системи є єдиний атрактор, наприклад папороть Барнслі.</p></div>
+    <div><h3>Рівняння Беллмана</h3><p>В економічній динаміці оператор Беллмана з дисконтом β &lt; 1 є стиском у sup-нормі з q = β. Звідси існування та єдиність функції цінності і збіжність value iteration.</p></div>
+  </div>
+</section>
+
+<footer>Джерело теореми: S. Banach, «Sur les opérations dans les ensembles abstraits et leur application aux équations intégrales», Fundamenta Mathematicae 3 (1922). Усі обчислення на сторінці виконуються в браузері.</footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s);
+const RM=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const SUB="₀₁₂₃₄₅₆₇₈₉", SUP="⁰¹²³⁴⁵⁶⁷⁸⁹";
+const sub=n=>String(n).split("").map(c=>SUB[+c]).join("");
+const sup=n=>String(n).replace("-","⁻").split("").map(c=>c==="⁻"?c:SUP[+c]).join("");
+function fmt(v){
+  if(!isFinite(v)) return "∞";
+  if(v===0) return "0";
+  const a=Math.abs(v);
+  if(a>=1e-3&&a<1e4) return v.toFixed(a<0.01?5:4);
+  const e=Math.floor(Math.log10(a)); const m=v/Math.pow(10,e);
+  return m.toFixed(2)+"·10"+sup(e);
+}
+function tok(){
+  const cs=getComputedStyle(document.documentElement); const g=n=>cs.getPropertyValue(n).trim();
+  return {bg:g("--surface"),ink:g("--ink"),muted:g("--muted"),grid:g("--grid"),line:g("--line"),orbit:g("--orbit"),
+    fixed:g("--fixed"),cool:g("--cool"),ok:g("--ok"),bad:g("--bad"),mono:g("--f-mono"),serif:g("--f-display")};
+}
+function hexA(h,a){h=h.replace("#","");if(h.length===3)h=h.split("").map(c=>c+c).join("");const n=parseInt(h,16);return "rgba("+(n>>16&255)+","+(n>>8&255)+","+(n&255)+","+a+")";}
+function setup(cv){
+  const r=cv.getBoundingClientRect(); const dpr=window.devicePixelRatio||1;
+  cv.width=Math.max(1,Math.round(r.width*dpr)); cv.height=Math.max(1,Math.round(r.height*dpr));
+  const ctx=cv.getContext("2d"); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx,w:r.width,h:r.height};
+}
+function view(w,h,cx,cy,hw){const s=w/(2*hw);return {s,X:x=>w/2+(x-cx)*s,Y:y=>h/2-(y-cy)*s,inv:(px,py)=>[cx+(px-w/2)/s,cy-(py-h/2)/s]};}
+function grid(ctx,v,w,h,T,step){
+  ctx.fillStyle=T.bg;ctx.fillRect(0,0,w,h);
+  const a=v.inv(0,0),b=v.inv(w,h);ctx.lineWidth=1;
+  for(let x=Math.ceil(a[0]/step)*step;x<=b[0];x+=step){const px=Math.round(v.X(x))+.5;ctx.strokeStyle=Math.abs(x)<1e-9?T.line:T.grid;ctx.beginPath();ctx.moveTo(px,0);ctx.lineTo(px,h);ctx.stroke();}
+  for(let y=Math.ceil(b[1]/step)*step;y<=a[1];y+=step){const py=Math.round(v.Y(y))+.5;ctx.strokeStyle=Math.abs(y)<1e-9?T.line:T.grid;ctx.beginPath();ctx.moveTo(0,py);ctx.lineTo(w,py);ctx.stroke();}
+}
+function dot(ctx,x,y,r,fill,stroke){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.stroke();}}
+function arrow(ctx,x1,y1,x2,y2,col,head){
+  ctx.strokeStyle=col;ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+  const L=Math.hypot(x2-x1,y2-y1); if(L<head*1.6) return;
+  const ux=(x2-x1)/L,uy=(y2-y1)/L; const bx=x2-ux*head,by=y2-uy*head;
+  ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(bx-uy*head*.45,by+ux*head*.45);ctx.lineTo(bx+uy*head*.45,by-ux*head*.45);ctx.closePath();ctx.fill();
+}
+function label(ctx,t,x,y,col,font,align){ctx.fillStyle=col;ctx.font=font;ctx.textAlign=align||"left";ctx.textBaseline="middle";ctx.fillText(t,x,y);}
+const dist=(p,r)=>Math.hypot(p[0]-r[0],p[1]-r[1]);
+const redraws=[];
+
+/* ================= 1. Sandbox ================= */
+const S={q:.78,th:35,xs:[0.35,0.12],starts:[[-1.7,1.05],[1.75,-0.9],[-1.25,-1.2]],k:40,img:true};
+const N=40; let sv=null, anim=0;
+function smap(){
+  const t=S.th*Math.PI/180, a=S.q*Math.cos(t), c=S.q*Math.sin(t);
+  const b=[(1-a)*S.xs[0]+c*S.xs[1], -c*S.xs[0]+(1-a)*S.xs[1]];
+  const det=(1-a)*(1-a)+c*c;
+  return {a,c,b,det,f:p=>[a*p[0]-c*p[1]+b[0], c*p[0]+a*p[1]+b[1]]};
+}
+function orbit(f,p,n){const o=[p];for(let i=0;i<n;i++){p=f(p);if(Math.abs(p[0])>60||Math.abs(p[1])>60)break;o.push(p);}return o;}
+const cvS=$("#cvS");
+function drawS(){
+  const {ctx,w,h}=setup(cvS); const T=tok(); const v=view(w,h,0,0,2.25); sv=v; grid(ctx,v,w,h,T,0.5);
+  const M=smap(); const ident=M.det<1e-6;
+  const Ky=Math.min(1.15,(h/v.s)/2-0.2);
+  const K=[[-1.9,-Ky],[1.9,-Ky],[1.9,Ky],[-1.9,Ky]];
+  if(S.img){
+    let P=K; const lim=Math.min(S.k,12);
+    for(let i=0;i<=lim;i++){
+      ctx.beginPath();P.forEach((p,j)=>{const x=v.X(p[0]),y=v.Y(p[1]);j?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.closePath();
+      ctx.fillStyle=hexA(i?T.orbit:T.muted,i?0.045:0.06);ctx.fill();
+      ctx.strokeStyle=hexA(i?T.orbit:T.muted,i?Math.max(0.12,0.5-i*0.035):0.5);ctx.lineWidth=1;ctx.stroke();
+      if(i<=2){const tl=P[3];label(ctx,i===0?"K":i===1?"f(K)":"f²(K)",v.X(tl[0])+4,v.Y(tl[1])+10,hexA(i?T.orbit:T.muted,.8),"italic 13px "+T.serif);}
+      if(S.q>1.0001) break;
+      P=P.map(M.f);
+    }
+  }
+  S.starts.forEach((s0,si)=>{
+    const o=orbit(M.f,s0,N).slice(0,S.k+1);
+    ctx.lineWidth=1.3;ctx.strokeStyle=hexA(T.orbit,.75);ctx.beginPath();
+    o.forEach((p,i)=>{const x=v.X(p[0]),y=v.Y(p[1]);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();
+    o.forEach((p,i)=>{if(i===0)return;dot(ctx,v.X(p[0]),v.Y(p[1]),Math.max(1.6,4-i*0.12),T.orbit);});
+    ctx.lineWidth=2;dot(ctx,v.X(s0[0]),v.Y(s0[1]),7,T.bg,T.orbit);
+    label(ctx,"x"+sub(0)+(si?"′".repeat(si):""),v.X(s0[0])+10,v.Y(s0[1])-10,T.orbit,"italic 14px "+T.serif);
+  });
+  if(!ident){
+    const x=v.X(S.xs[0]),y=v.Y(S.xs[1]); const col=S.q<1?T.fixed:T.muted;
+    ctx.lineWidth=2;dot(ctx,x,y,8,null,col);ctx.beginPath();ctx.moveTo(x-13,y);ctx.lineTo(x+13,y);ctx.moveTo(x,y-13);ctx.lineTo(x,y+13);ctx.strokeStyle=col;ctx.lineWidth=1;ctx.stroke();
+    label(ctx,"x*",x+12,y+14,col,"italic 600 15px "+T.serif);
+  }
+  updS(M,ident);
+}
+function updS(M,ident){
+  $("#qv").textContent=S.q.toFixed(2); $("#thv").textContent=S.th+"°";
+  const st=$("#status"); let cls="ok",txt;
+  if(ident){cls="bad";txt="q = 1, θ = 0: f = id, нерухома кожна точка, єдиності немає";}
+  else if(S.q<0.995){txt="Стиск: q = "+S.q.toFixed(2)+" < 1. Нерухома точка одна, усі орбіти йдуть до неї";}
+  else if(S.q<1.005){cls="warn";txt="q = 1: поворот без стиску. Нерухома точка є, але ітерації кружляють і не збігаються";}
+  else {cls="bad";txt="q > 1: нерухома точка є, але ітерації від неї тікають";}
+  st.className="pill "+cls; st.textContent=txt;
+  const tab=$("#tab"), eps=$("#eps");
+  if(!S.starts.length){tab.innerHTML="";eps.textContent="Додайте стартову точку, торкнувшись площини.";return;}
+  const o=orbit(M.f,S.starts[0],400); const d01=o.length>1?dist(o[0],o[1]):0;
+  let html="<tr><th>n</th><th>d(xₙ, xₙ₊₁)</th><th>qⁿ·d(x₀, x₁)</th><th>d(xₙ, x*)</th></tr>";
+  [0,1,2,3,5,10,20,40].forEach(n=>{ if(n+1>=o.length) return;
+    html+="<tr><td>"+n+"</td><td>"+fmt(dist(o[n],o[n+1]))+"</td><td>"+fmt(Math.pow(S.q,n)*d01)+"</td><td>"+(ident?"—":fmt(dist(o[n],S.xs)))+"</td></tr>";});
+  tab.innerHTML=html;
+  if(S.q<0.995&&!ident&&d01>0){
+    const e=1e-6; const Nb=Math.max(0,Math.ceil(Math.log(e*(1-S.q)/d01)/Math.log(S.q)));
+    let Na=o.findIndex(p=>dist(p,S.xs)<e);
+    eps.innerHTML="Таблиця для першої точки x₀. Щоб гарантувати похибку менше 10⁻⁶, апріорна оцінка <span class=\"m\">qⁿ·d(x₀,x₁)/(1−q)</span> вимагає <b class=\"mono\">"+Nb+"</b> кроків; насправді вистачає <b class=\"mono\">"+(Na<0?"> 400":Na)+"</b>.";
+  } else eps.textContent="Для q ≥ 1 оцінка похибки не працює: відстані між сусідніми точками не спадають.";
+}
+function runS(){cancelAnimationFrame(anim);if(RM){S.k=N;drawS();return;}S.k=0;const t0=performance.now();
+  const step=t=>{S.k=Math.min(N,Math.floor((t-t0)/85));drawS();if(S.k<N)anim=requestAnimationFrame(step);};anim=requestAnimationFrame(step);}
+$("#q").addEventListener("input",e=>{S.q=+e.target.value;S.k=N;cancelAnimationFrame(anim);drawS();});
+$("#th").addEventListener("input",e=>{S.th=+e.target.value;S.k=N;cancelAnimationFrame(anim);drawS();});
+$("#img").addEventListener("change",e=>{S.img=e.target.checked;drawS();});
+$("#run").addEventListener("click",runS);
+$("#clear").addEventListener("click",()=>{S.starts=[];drawS();});
+let drag=null;
+cvS.addEventListener("pointerdown",e=>{
+  if(!sv) return; const r=cvS.getBoundingClientRect(); const px=e.clientX-r.left,py=e.clientY-r.top;
+  const hit=p=>Math.hypot(sv.X(p[0])-px,sv.Y(p[1])-py)<18;
+  cancelAnimationFrame(anim); S.k=N;
+  if(hit(S.xs)&&smap().det>1e-6) drag={t:"x"};
+  else{const i=S.starts.findIndex(hit); if(i>=0) drag={t:"s",i}; else{ if(S.starts.length>=6) S.starts.shift(); S.starts.push(sv.inv(px,py)); drag={t:"s",i:S.starts.length-1,fresh:true}; }}
+  try{cvS.setPointerCapture(e.pointerId);}catch(_){}
+  drawS();
+});
+cvS.addEventListener("pointermove",e=>{
+  if(!drag||!sv) return; const r=cvS.getBoundingClientRect(); const p=sv.inv(e.clientX-r.left,e.clientY-r.top);
+  if(drag.t==="x") S.xs=p; else S.starts[drag.i]=p; drag.moved=true; drawS();
+});
+const endDrag=()=>{ if(drag&&drag.fresh&&!drag.moved) runS(); drag=null; };
+cvS.addEventListener("pointerup",endDrag); cvS.addEventListener("pointercancel",endDrag);
+redraws.push(drawS);
+
+/* ================= 2. Proof stepper ================= */
+const A=[[0.63,-0.48],[0.44,0.55]], XS=[0.4,-0.1];
+const PB=[(1-A[0][0])*XS[0]-A[0][1]*XS[1], -A[1][0]*XS[0]+(1-A[1][1])*XS[1]];
+const pf=p=>[A[0][0]*p[0]+A[0][1]*p[1]+PB[0], A[1][0]*p[0]+A[1][1]*p[1]+PB[1]];
+const PQ=(function(){const m00=A[0][0]**2+A[1][0]**2,m11=A[0][1]**2+A[1][1]**2,m01=A[0][0]*A[0][1]+A[1][0]*A[1][1];
+  return Math.sqrt((m00+m11)/2+Math.sqrt(((m00-m11)/2)**2+m01*m01));})();
+const P0=[-1.3,0.9]; const PO=orbit(pf,P0,60); const D01=dist(PO[0],PO[1]);
+const R=n=>Math.pow(PQ,n)*D01/(1-PQ);
+const Y0=[-0.55,-1.05];
+const qs=PQ.toFixed(3);
+const STEPS=[
+ {t:"Будуємо ітерації",v:[0,0,2.15],
+  h:`<p>Беремо довільну точку <span class="m">x₀ ∈ X</span> і застосовуємо до неї <span class="m">f</span> знову і знову:</p>
+  <div class="eq">x₁ = f(x₀), x₂ = f(x₁), …, xₙ₊₁ = f(xₙ).</div>
+  <p>Оскільки <span class="m">f(X) ⊂ X</span>, уся послідовність лежить у <span class="m">X</span>. Далі треба показати дві речі: послідовність збігається, а її границя нерухома.</p>
+  <p class="note">На малюнку <span class="m">f(x) = Ax + b</span>, де <span class="m">A</span> — фіксована матриця 2×2. Її стала стиску <span class="m">q = ‖A‖ ≈ ${qs}</span> (операторна норма в евклідовій метриці).</p>`},
+ {t:"Відстані спадають геометрично",v:[0,0,2.15],chart:"steps",
+  h:`<p>Застосовуємо умову стиску до двох сусідніх членів, а потім повторюємо:</p>
+  <div class="eq">d(xₙ, xₙ₊₁) = d(f(xₙ₋₁), f(xₙ)) ≤ q·d(xₙ₋₁, xₙ) ≤ … ≤ qⁿ·d(x₀, x₁).</div>
+  <p>Стовпчики на графіку — фактичні довжини відрізків <span class="m">xₙxₙ₊₁</span>, лінія — оцінка <span class="m">qⁿ·d(x₀, x₁)</span>. Шкала логарифмічна, тож оцінка — пряма. Стовпчики ніде не вилазять за лінію.</p>
+  <p class="note">Для «чистого» повороту зі стиском (як у пісочниці) тут була б рівність. Для перекошеної матриці нерівність строга.</p>`},
+ {t:"Послідовність Коші",v:[0,0,2.15],
+  h:`<p>Для <span class="m">m &gt; n</span> оцінюємо через нерівність трикутника і геометричну прогресію:</p>
+  <div class="eq">d(xₙ, xₘ) ≤ Σₖ₌ₙ<sup>m−1</sup> d(xₖ, xₖ₊₁) ≤ qⁿ(1 + q + q² + …)·d(x₀, x₁) = qⁿ·d(x₀, x₁)/(1 − q) =: rₙ.</div>
+  <p>Отже, увесь «хвіст» <span class="m">xₙ, xₙ₊₁, …</span> лежить у замкненій кулі <span class="m">B̄(xₙ, rₙ)</span>. На малюнку це кола. Вони вкладені одне в одне, бо <span class="m">d(xₙ, xₙ₊₁) + rₙ₊₁ ≤ rₙ</span>, а <span class="m">rₙ → 0</span>.</p>
+  <p>Для будь-якого <span class="m">ε &gt; 0</span> є <span class="m">n</span> з <span class="m">rₙ &lt; ε</span>. Це і є умова Коші.</p>`},
+ {t:"Повнота дає границю",v:[XS[0],XS[1],0.42],
+  h:`<p>Збільшуємо масштаб: кулі стягуються до однієї точки.</p>
+  <div class="eq">X повний ⇒ ∃ x* ∈ X: xₙ → x*.</div>
+  <p>Це <b>єдине</b> місце в доведенні, де використовується повнота. Якби точку <span class="m">x*</span> вирізали з простору, послідовність лишилася б послідовністю Коші, але границі в <span class="m">X</span> не мала б. Див. приклади <span class="m">(0, 1]</span> і <span class="m">ℚ ∩ [1, 2]</span> у розділі «Зламай теорему».</p>
+  <p class="note">Бонус: оскільки кулі замкнені та вкладені, <span class="m">x*</span> лежить у кожній <span class="m">B̄(xₙ, rₙ)</span>.</p>`},
+ {t:"Границя нерухома",v:[0,0,2.15],
+  h:`<p>Стиск ліпшицевий, а отже неперервний. Тому</p>
+  <div class="eq">f(x*) = f(lim xₙ) = lim f(xₙ) = lim xₙ₊₁ = x*.</div>
+  <p>Те саме без слова «неперервність», однією нерівністю:</p>
+  <div class="eq">d(f(x*), x*) ≤ d(f(x*), xₙ₊₁) + d(xₙ₊₁, x*) ≤ q·d(x*, xₙ) + d(xₙ₊₁, x*) → 0.</div>
+  <p>Пунктирні відрізки на малюнку — відстані <span class="m">d(xₙ, x*)</span>. Кожен наступний щонайменше в <span class="m">1/q</span> разів коротший.</p>`},
+ {t:"Єдиність",v:[0,0,2.15],
+  h:`<p>Нехай <span class="m">y</span> — ще одна нерухома точка, <span class="m">f(y) = y</span>. Тоді</p>
+  <div class="eq">d(x*, y) = d(f(x*), f(y)) ≤ q·d(x*, y).</div>
+  <p>При <span class="m">q &lt; 1</span> це можливо лише якщо <span class="m">d(x*, y) = 0</span>, тобто <span class="m">y = x*</span>.</p>
+  <p>Синя точка <span class="m">y</span> на малюнку — «кандидат». Після одного застосування <span class="m">f</span> відстань до <span class="m">x*</span> скорочується щонайменше в <span class="m">1/q</span> разів, тож <span class="m">f(y) ≠ y</span>. Її орбіта теж іде до <span class="m">x*</span>.</p>`},
+ {t:"Скільки кроків треба",v:[0,0,2.15],chart:"error",
+  h:`<p>Переходимо до границі <span class="m">m → ∞</span> в оцінці з кроку 3:</p>
+  <div class="eq">d(xₙ, x*) ≤ qⁿ·d(x₀, x₁)/(1 − q) &nbsp;(апріорна),<br>d(xₙ, x*) ≤ q·d(xₙ₋₁, xₙ)/(1 − q) &nbsp;(апостеріорна).</div>
+  <p>Апріорну оцінку можна порахувати до запуску ітерацій: з неї видно, скільки кроків вистачить для заданої точності. Апостеріорна використовує останній крок і зазвичай точніша.</p>
+  <p class="note">Коло на малюнку — <span class="m">B̄(x₅, r₅)</span>. Гарантовано, що <span class="m">x*</span> всередині.</p>`}
+];
+let cur=0, pv={cx:0,cy:0,hw:2.15}, pAnim=0;
+const cvP=$("#cvP"), cvC=$("#cvC");
+function drawP(){
+  const {ctx,w,h}=setup(cvP); const T=tok(); const v=view(w,h,pv.cx,pv.cy,pv.hw);
+  grid(ctx,v,w,h,T,pv.hw<1?0.1:0.5);
+  const st=cur, small=pv.hw<1;
+  const nShow=small?60:(st===0?9:24);
+  // faint full orbit
+  ctx.lineWidth=1;ctx.strokeStyle=hexA(T.orbit,st===0||st===1?0.0:0.35);ctx.beginPath();
+  PO.slice(0,nShow+1).forEach((p,i)=>{i?ctx.lineTo(v.X(p[0]),v.Y(p[1])):ctx.moveTo(v.X(p[0]),v.Y(p[1]));});ctx.stroke();
+  if(st===0||st===1){
+    ctx.lineWidth=st===1?2:1.4;
+    for(let i=0;i<8;i++){const a=PO[i],b=PO[i+1];
+      const col=st===1?(i%2?T.orbit:T.cool):hexA(T.orbit,.85);
+      arrow(ctx,v.X(a[0]),v.Y(a[1]),v.X(b[0]),v.Y(b[1]),col,9);
+      if(st===1&&i<4){const mx=(v.X(a[0])+v.X(b[0]))/2,my=(v.Y(a[1])+v.Y(b[1]))/2;label(ctx,dist(a,b).toFixed(2),mx+6,my-8,col,"12px "+T.mono);}
+    }
+  }
+  if(st===2||st===3){
+    const from=st===3?5:0, to=st===3?22:12;
+    for(let n=from;n<=to;n++){const c=PO[n];ctx.beginPath();ctx.arc(v.X(c[0]),v.Y(c[1]),R(n)*v.s,0,Math.PI*2);
+      ctx.strokeStyle=hexA(T.cool,Math.max(.18,.85-(n-from)*0.06));ctx.lineWidth=1.2;ctx.stroke();}
+    if(st===2){const n=4,c=PO[n];label(ctx,"B̄(x"+sub(n)+", r"+sub(n)+")",v.X(c[0])+R(n)*v.s*0.72,v.Y(c[1])-R(n)*v.s*0.72,T.cool,"italic 14px "+T.serif);}
+  }
+  if(st===4){
+    ctx.setLineDash([5,4]);ctx.lineWidth=1.2;
+    for(let n=0;n<6;n++){const c=PO[n];ctx.strokeStyle=hexA(T.fixed,.9-n*0.12);ctx.beginPath();ctx.moveTo(v.X(c[0]),v.Y(c[1]));ctx.lineTo(v.X(XS[0]),v.Y(XS[1]));ctx.stroke();
+      label(ctx,dist(c,XS).toFixed(2),(v.X(c[0])+v.X(XS[0]))/2+4,(v.Y(c[1])+v.Y(XS[1]))/2+10,T.fixed,"11px "+T.mono);}
+    ctx.setLineDash([]);
+  }
+  if(st===5){
+    const yo=orbit(pf,Y0,30);
+    ctx.lineWidth=1.3;ctx.strokeStyle=hexA(T.cool,.7);ctx.beginPath();yo.forEach((p,i)=>{i?ctx.lineTo(v.X(p[0]),v.Y(p[1])):ctx.moveTo(v.X(p[0]),v.Y(p[1]));});ctx.stroke();
+    yo.slice(1).forEach(p=>dot(ctx,v.X(p[0]),v.Y(p[1]),2.2,T.cool));
+    const fy=yo[1];
+    ctx.setLineDash([5,4]);ctx.strokeStyle=T.fixed;ctx.lineWidth=1.3;
+    [[Y0,"d(x*, y) = "],[fy,"d(x*, f(y)) = "]].forEach(([p,t],j)=>{ctx.beginPath();ctx.moveTo(v.X(p[0]),v.Y(p[1]));ctx.lineTo(v.X(XS[0]),v.Y(XS[1]));ctx.stroke();
+      label(ctx,t+dist(p,XS).toFixed(3),(v.X(p[0])+v.X(XS[0]))/2+(j?8:-8),(v.Y(p[1])+v.Y(XS[1]))/2+(j?-10:12),T.fixed,"italic 13px "+T.serif,j?"left":"right");});
+    ctx.setLineDash([]);ctx.lineWidth=2;dot(ctx,v.X(Y0[0]),v.Y(Y0[1]),7,T.bg,T.cool);
+    label(ctx,"y",v.X(Y0[0])-12,v.Y(Y0[1])+2,T.cool,"italic 600 15px "+T.serif,"right");
+    label(ctx,"f(y)",v.X(fy[0])+9,v.Y(fy[1])+12,T.cool,"italic 14px "+T.serif);
+  }
+  if(st===6){const n=5,c=PO[n];ctx.beginPath();ctx.arc(v.X(c[0]),v.Y(c[1]),R(n)*v.s,0,Math.PI*2);ctx.strokeStyle=T.cool;ctx.lineWidth=1.5;ctx.stroke();
+    label(ctx,"B̄(x₅, r₅)",v.X(c[0]),v.Y(c[1])-R(n)*v.s-10,T.cool,"italic 14px "+T.serif,"center");}
+  // points
+  const pts=PO.slice(0,nShow+1);
+  pts.forEach((p,i)=>{dot(ctx,v.X(p[0]),v.Y(p[1]),i===0?5:Math.max(1.8,4-i*0.15),T.orbit);
+    if((!small&&i<(st===0||st===1?6:4))||(small&&i>=5&&i<=7)) label(ctx,"x"+sub(i),v.X(p[0])+8,v.Y(p[1])-10,T.orbit,"italic 14px "+T.serif);});
+  // fixed point
+  if(st>=3||st===0){const x=v.X(XS[0]),y=v.Y(XS[1]);ctx.lineWidth=2;dot(ctx,x,y,7,null,T.fixed);
+    label(ctx,st===3?"x* = lim xₙ":st===4?"f(x*) = x*":"x*",x+12,y+16,T.fixed,"italic 600 15px "+T.serif);}
+}
+function drawChart(){
+  const s=STEPS[cur]; const box=$("#chartbox"); if(!s.chart){box.hidden=true;return;} box.hidden=false;
+  const {ctx,w,h}=setup(cvC); const T=tok(); ctx.fillStyle=T.bg;ctx.fillRect(0,0,w,h);
+  const n=s.chart==="steps"?16:22; let series;
+  if(s.chart==="steps"){
+    series=[{v:[...Array(n)].map((_,i)=>dist(PO[i],PO[i+1])),type:"bar",c:T.orbit,name:"d(xₙ, xₙ₊₁), факт"},
+            {v:[...Array(n)].map((_,i)=>Math.pow(PQ,i)*D01),type:"line",c:T.cool,name:"qⁿ·d(x₀, x₁), оцінка"}];
+  } else {
+    series=[{v:[...Array(n)].map((_,i)=>dist(PO[i],XS)),type:"bar",c:T.orbit,name:"d(xₙ, x*), факт"},
+            {v:[...Array(n)].map((_,i)=>R(i)),type:"line",c:T.cool,name:"апріорна оцінка"},
+            {v:[...Array(n)].map((_,i)=>i?PQ*dist(PO[i-1],PO[i])/(1-PQ):NaN),type:"line",c:T.fixed,dash:true,name:"апостеріорна оцінка"}];
+  }
+  const all=[];series.forEach(se=>se.v.forEach(x=>{if(x>0&&isFinite(x))all.push(x);}));
+  const lo=Math.floor(Math.log10(Math.min(...all))), hi=Math.ceil(Math.log10(Math.max(...all)));
+  const L=46,Rm=10,Tp=10,B=24; const X=i=>L+(i+0.5)*(w-L-Rm)/n; const Y=x=>Tp+(hi-Math.log10(x))/(hi-lo)*(h-Tp-B);
+  ctx.lineWidth=1;
+  for(let e=lo;e<=hi;e++){const y=Math.round(Y(Math.pow(10,e)))+.5;ctx.strokeStyle=T.grid;ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(w-Rm,y);ctx.stroke();
+    label(ctx,"10"+sup(e),L-6,y,T.muted,"11px "+T.mono,"right");}
+  for(let i=0;i<n;i+=5) label(ctx,"n="+i,X(i),h-10,T.muted,"11px "+T.mono,"center");
+  const bw=Math.max(3,(w-L-Rm)/n*0.55);
+  series.forEach(se=>{
+    if(se.type==="bar"){ctx.fillStyle=hexA(se.c,.75);se.v.forEach((x,i)=>{if(x>0){const y=Y(x);ctx.fillRect(X(i)-bw/2,y,bw,h-B-y);}});}
+    else{ctx.strokeStyle=se.c;ctx.lineWidth=2;ctx.setLineDash(se.dash?[5,4]:[]);ctx.beginPath();let st=false;
+      se.v.forEach((x,i)=>{if(!(x>0))return;const px=X(i),py=Y(x);st?ctx.lineTo(px,py):ctx.moveTo(px,py);st=true;});ctx.stroke();ctx.setLineDash([]);}
+  });
+  $("#legend").innerHTML=series.map(se=>`<span><i style="background:${se.c}${se.dash?";opacity:.7":""}"></i>${se.name}</span>`).join("");
+}
+function setStep(i){
+  cur=Math.max(0,Math.min(STEPS.length-1,i)); const s=STEPS[cur];
+  $("#ptext").innerHTML=`<div class="eyebrow">Крок ${cur+1} з ${STEPS.length}</div><h3>${s.t}</h3>`+s.h;
+  document.querySelectorAll("#steps button").forEach((b,j)=>{if(j===cur)b.setAttribute("aria-current","step");else b.removeAttribute("aria-current");});
+  $("#prev").disabled=cur===0; $("#next").disabled=cur===STEPS.length-1;
+  const to={cx:s.v[0],cy:s.v[1],hw:s.v[2]}, from={...pv};
+  cancelAnimationFrame(pAnim); drawChart();
+  if(RM){pv=to;drawP();return;}
+  const t0=performance.now(); const go=t=>{const k=Math.min(1,(t-t0)/550),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+    pv={cx:from.cx+(to.cx-from.cx)*e,cy:from.cy+(to.cy-from.cy)*e,hw:Math.exp(Math.log(from.hw)+(Math.log(to.hw)-Math.log(from.hw))*e)};
+    drawP(); if(k<1) pAnim=requestAnimationFrame(go);}; pAnim=requestAnimationFrame(go);
+}
+STEPS.forEach((s,i)=>{const b=document.createElement("button");b.textContent=(i+1)+". "+s.t;b.setAttribute("role","listitem");b.addEventListener("click",()=>setStep(i));$("#steps").appendChild(b);});
+$("#prev").addEventListener("click",()=>setStep(cur-1)); $("#next").addEventListener("click",()=>setStep(cur+1));
+redraws.push(drawP,drawChart);
+
+/* ================= 3. Break it ================= */
+function gcd(a,b){while(b){[a,b]=[b,a%b];}return a;}
+const CASES=[
+ {id:"A",name:"(0, 1], x ↦ x/2",lo:-0.06,hi:1.06,X:[0,1],openL:true,f:x=>x/2,x0:0.92,n:12,ck:[0,1,1],hole:[0,0],
+  note:`Тут <span class="m">q = 1/2</span> і <span class="m">f(X) ⊂ X</span>. Послідовність <span class="m">xₙ = x₀/2ⁿ</span> — послідовність Коші, але її границя 0 не належить <span class="m">X</span>. Простір <span class="m">(0, 1]</span> не повний, і нерухомої точки в ньому немає: <span class="m">x/2 = x</span> лише при <span class="m">x = 0</span>.`,
+  rows:()=>{let r="<tr><th>n</th><th>xₙ</th><th>|xₙ − xₙ₊₁|</th></tr>";let x=0.92;for(let i=0;i<8;i++){r+=`<tr><td>${i}</td><td>${fmt(x)}</td><td>${fmt(x/2)}</td></tr>`;x/=2;}return r;}},
+ {id:"B",name:"ℚ ∩ [1, 2], x ↦ x/2 + 1/x",lo:0.95,hi:2.05,X:[1,2],rat:true,f:x=>x/2+1/x,x0:2,n:6,ck:[0,1,1],hole:[Math.SQRT2,Math.SQRT2],
+  note:`Це ітерації методу Ньютона для √2. На <span class="m">[1, 2]</span> маємо <span class="m">|f′(x)| = |1/2 − 1/x²| ≤ 1/2</span>, тож <span class="m">q = 1/2</span>, і <span class="m">f([1, 2]) = [√2, 3/2]</span>. З раціонального старту всі <span class="m">xₙ</span> раціональні, але прямують до <span class="m">√2 ∉ ℚ</span>. Простір <span class="m">ℚ ∩ [1, 2]</span> не повний, нерухомої точки в ньому немає.`,
+  rows:()=>{let r="<tr><th>n</th><th>xₙ</th><th>десятковий запис</th><th>|xₙ − √2|</th></tr>";let p=2n,q=1n;
+    for(let i=0;i<5;i++){const v=Number(p)/Number(q);r+=`<tr><td>${i}</td><td>${p}/${q}</td><td>${v.toFixed(12)}</td><td>${fmt(Math.abs(v-Math.SQRT2))}</td></tr>`;
+      const np=p*p+2n*q*q,nq=2n*p*q,g=gcd(np,nq);p=np/g;q=nq/g;}return r;}},
+ {id:"C",name:"[1, ∞), x ↦ x + 1/x",lo:0.7,hi:8.6,X:[1,Infinity],f:x=>x+1/x,x0:1,n:28,ck:[1,1,0],
+  note:`Тут <span class="m">|f(x) − f(y)| = |x − y|·(1 − 1/(xy)) &lt; |x − y|</span> при <span class="m">x ≠ y</span>, тож відображення «майже стискає». Але множник <span class="m">1 − 1/(xy)</span> прямує до 1, і єдиної сталої <span class="m">q &lt; 1</span> немає. Нерухомої точки теж немає (<span class="m">1/x ≠ 0</span>), ітерації повільно тікають на нескінченність: <span class="m">xₙ ≈ √(2n)</span>.`,
+  rows:()=>{let r="<tr><th>n</th><th>xₙ</th><th>|xₙ₊₁ − xₙ| / |xₙ − xₙ₋₁|</th></tr>";const o=[1];for(let i=0;i<60;i++)o.push(o[i]+1/o[i]);
+    [1,2,3,5,10,20,40,59].forEach(i=>{r+=`<tr><td>${i}</td><td>${o[i].toFixed(4)}</td><td>${((o[i+1]-o[i])/(o[i]-o[i-1])).toFixed(4)}</td></tr>`;});return r;}},
+ {id:"D",name:"ℝ, x ↦ x + 1",lo:-0.6,hi:7.6,X:[-Infinity,Infinity],f:x=>x+1,x0:0,n:7,ck:[1,1,0],
+  note:`Це ізометрія: <span class="m">|f(x) − f(y)| = |x − y|</span>, тобто <span class="m">q = 1</span>. Простір повний, <span class="m">f(ℝ) = ℝ</span>, а нерухомої точки немає. Отже, умову <span class="m">q &lt; 1</span> не можна послабити до <span class="m">q ≤ 1</span>. Схожий приклад: <span class="m">x ↦ −x</span> має нерухому точку 0, але ітерації 1, −1, 1, … не збігаються.`,
+  rows:()=>{let r="<tr><th>n</th><th>xₙ</th><th>|xₙ₊₁ − xₙ|</th></tr>";for(let i=0;i<7;i++)r+=`<tr><td>${i}</td><td>${i}</td><td>1</td></tr>`;return r;}},
+ {id:"E",name:"[0, 1], x ↦ x/2 + 1",lo:-0.1,hi:2.3,X:[0,1],f:x=>x/2+1,x0:0.2,n:9,ck:[1,0,1],fixOut:2,
+  note:`Простір <span class="m">[0, 1]</span> повний, <span class="m">q = 1/2</span>, але <span class="m">f([0, 1]) = [1, 3/2] ⊄ [0, 1]</span>. Ітерацію в <span class="m">X</span> не можна навіть продовжити: <span class="m">x₁ = 1.1 ∉ X</span>. Нерухома точка в <span class="m">f</span> як у відображення прямої є (<span class="m">x = 2</span>), але вона поза простором. Тому теорема вимагає саме <span class="m">f : X → X</span>.`,
+  rows:()=>{let r="<tr><th>n</th><th>xₙ</th><th>xₙ ∈ X?</th></tr>";let x=0.2;for(let i=0;i<7;i++){r+=`<tr><td>${i}</td><td>${x.toFixed(4)}</td><td>${x<=1?"так":"ні"}</td></tr>`;x=x/2+1;}return r;}}
+];
+let bc=0, bk=0, bAnim=0; const cvB=$("#cvB");
+function drawB(){
+  const c=CASES[bc]; const {ctx,w,h}=setup(cvB); const T=tok(); ctx.fillStyle=T.bg;ctx.fillRect(0,0,w,h);
+  const L=36,Rm=12,Tp=12,B=40; const pw=w-L-Rm, ph=h-Tp-B, side=Math.min(pw,ph);
+  const ox=L+(pw-side)/2, oy=Tp;
+  const X=x=>ox+(x-c.lo)/(c.hi-c.lo)*side, Y=y=>oy+side-(y-c.lo)/(c.hi-c.lo)*side;
+  // ticks
+  const span=c.hi-c.lo, st=span>5?1:span>1.5?0.5:0.25;
+  ctx.lineWidth=1;
+  for(let t=Math.ceil(c.lo/st)*st;t<=c.hi+1e-9;t+=st){const px=Math.round(X(t))+.5,py=Math.round(Y(t))+.5;ctx.strokeStyle=T.grid;
+    ctx.beginPath();ctx.moveTo(px,oy);ctx.lineTo(px,oy+side);ctx.moveTo(ox,py);ctx.lineTo(ox+side,py);ctx.stroke();
+    const tl=Math.abs(t-Math.round(t))<1e-9?String(Math.round(t)):t.toFixed(2).replace(/0$/,"");
+    label(ctx,tl,px,oy+side+10,T.muted,"10px "+T.mono,"center");label(ctx,tl,ox-5,py,T.muted,"10px "+T.mono,"right");}
+  ctx.strokeStyle=T.line;ctx.strokeRect(ox+.5,oy+.5,side-1,side-1);
+  ctx.save();ctx.beginPath();ctx.rect(ox,oy,side,side);ctx.clip();
+  // diagonal
+  ctx.strokeStyle=T.muted;ctx.lineWidth=1;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(X(c.lo),Y(c.lo));ctx.lineTo(X(c.hi),Y(c.hi));ctx.stroke();ctx.setLineDash([]);
+  label(ctx,"y = x",X(c.hi)-8,Y(c.hi)+14,T.muted,"italic 13px "+T.serif,"right");
+  // graph of f: solid on X, faint elsewhere
+  const inX=x=>x>=c.X[0]-1e-12&&x<=c.X[1]+1e-12&&!(c.openL&&x<=c.X[0]+1e-9);
+  for(const pass of [0,1]){ctx.beginPath();let on=false;
+    for(let i=0;i<=400;i++){const x=c.lo+span*i/400; if(x<=0&&(c.id==="B"||c.id==="C")){on=false;continue;}
+      const y=c.f(x),good=inX(x)===!!pass; if(!good||y>c.hi+span||y<c.lo-span){on=false;continue;}
+      on?ctx.lineTo(X(x),Y(y)):ctx.moveTo(X(x),Y(y));on=true;}
+    ctx.strokeStyle=pass?T.ink:hexA(T.muted,.6);ctx.lineWidth=pass?2:1.2;ctx.setLineDash(pass?[]:[2,4]);ctx.stroke();ctx.setLineDash([]);}
+  // cobweb
+  const pts=[];let x=c.x0; pts.push([x,c.lo]);
+  for(let i=0;i<c.n;i++){const y=c.f(x);pts.push([x,y]);pts.push([y,y]);x=y;}
+  const segs=Math.min(bk,pts.length-1);
+  ctx.strokeStyle=T.orbit;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(X(pts[0][0]),Y(pts[0][1]));
+  for(let i=1;i<=segs;i++)ctx.lineTo(X(pts[i][0]),Y(pts[i][1]));ctx.stroke();
+  for(let i=2;i<=segs;i+=2)dot(ctx,X(pts[i][0]),Y(pts[i][1]),2.5,T.orbit);
+  // holes / outside fixed point
+  if(c.hole){ctx.lineWidth=2;dot(ctx,X(c.hole[0]),Y(c.hole[1]),6,T.bg,T.bad);
+    label(ctx,c.id==="B"?"√2 ∉ ℚ":"0 ∉ X",X(c.hole[0])+(c.id==="A"?10:-10),Y(c.hole[1])+(c.id==="A"?-14:16),T.bad,"italic 600 14px "+T.serif,c.id==="A"?"left":"right");}
+  if(c.fixOut){ctx.lineWidth=2;dot(ctx,X(c.fixOut),Y(c.fixOut),6,T.bg,T.fixed);label(ctx,"x = 2 ∉ X",X(c.fixOut)-10,Y(c.fixOut)+16,T.fixed,"italic 600 14px "+T.serif,"right");}
+  ctx.restore();
+  // X band below axis
+  const by=oy+side+26, a=Math.max(c.lo,c.X[0]), b=Math.min(c.hi,c.X[1]);
+  ctx.strokeStyle=T.cool;ctx.lineWidth=4;ctx.setLineDash(c.rat?[2,3]:[]);ctx.beginPath();ctx.moveTo(X(a),by);ctx.lineTo(X(b),by);ctx.stroke();ctx.setLineDash([]);
+  if(c.openL){ctx.lineWidth=2;dot(ctx,X(c.X[0]),by,4,T.bg,T.cool);}
+  if(c.rat){ctx.lineWidth=2;dot(ctx,X(Math.SQRT2),by,4,T.bg,T.bad);}
+  label(ctx,"X",X(b)+(b>=c.hi-1e-9?-4:8),by-9,T.cool,"italic 600 14px "+T.serif,b>=c.hi-1e-9?"right":"left");
+}
+function setCase(i){
+  bc=i; const c=CASES[i];
+  document.querySelectorAll("#tabs button").forEach((b,j)=>b.setAttribute("aria-selected",j===i?"true":"false"));
+  const names=["Простір X повний","f відображає X у X","Є стала q < 1"];
+  $("#checks").innerHTML=names.map((n,j)=>`<div><span>${n}</span><b class="${c.ck[j]?"y":"n"}">${c.ck[j]?"✓ так":"✗ ні"}</b></div>`).join("");
+  $("#bnote").innerHTML=c.note; $("#btab").innerHTML=c.rows();
+  cancelAnimationFrame(bAnim); const total=2*c.n;
+  if(RM){bk=total;drawB();return;}
+  bk=0;const t0=performance.now();const go=t=>{bk=Math.min(total,Math.floor((t-t0)/110));drawB();if(bk<total)bAnim=requestAnimationFrame(go);};bAnim=requestAnimationFrame(go);
+}
+CASES.forEach((c,i)=>{const b=document.createElement("button");b.textContent=c.name;b.setAttribute("role","tab");b.addEventListener("click",()=>setCase(i));$("#tabs").appendChild(b);});
+redraws.push(drawB);
+
+/* ================= wiring ================= */
+const redrawAll=()=>redraws.forEach(f=>f());
+const ro=new ResizeObserver(()=>redrawAll());[cvS,cvP,cvB,cvC].forEach(c=>ro.observe(c.parentElement));
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",redrawAll);
+new MutationObserver(redrawAll).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(redrawAll);
+S.k=N; drawS(); setStep(0); setCase(0);
+})();
+</script>
+
+</html>
