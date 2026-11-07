@@ -12,7 +12,11 @@
 | `banach.html` | Теорема Банаха про нерухому точку стискаючого відображення (додатково) |
 | `index.html` | Головна сторінка з посиланнями на обидві |
 
-Онлайн-версія (GitHub Pages): _посилання додасться після публікації_.
+Онлайн-версія (GitHub Pages):
+
+- головна: https://joper7.github.io/topology_asignment/
+- компактність (основна робота): https://joper7.github.io/topology_asignment/compactness.html
+- теорема Банаха (додатково): https://joper7.github.io/topology_asignment/banach.html
 
 ## Звіти
 
